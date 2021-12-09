@@ -1,5 +1,7 @@
 import math
 
+intersections = []
+
 class Line:
 
     def __init__(self, p1, p2):
@@ -8,11 +10,38 @@ class Line:
         self.x2 = p2[0]
         self.y2 = p2[1]
 
-    def isX(self):
+    def __len__(self):
+        diffX = abs(self.x2 - self.x1)
+        diffY = abs(self.y2 - self.y1)
+
+        return (int)(math.sqrt(diffX * diffX + diffY * diffY))
+
+    def isX(self) -> bool:
         return (self.x1 != self.x2)
 
-    def isY(self):
+    def isY(self) -> bool:
         return (self.y1 != self.y2)
+
+    def containsPoint(self, point) -> bool:
+        if (self.isX()):
+            if (point[1] != self.y1):
+                return False
+            if ((point[0] <= self.x1 and point[0] >= self.x2) or (point[0] >= self.x1 and point[0] <= self.x2)):
+                return True
+
+        if (self.isY()):
+            if (point[0] != self.x1):
+                return False
+            if ((point[1] <= self.y1 and point[1] >= self.y2) or (point[1] >= self.y1 and point[1] <= self.y2)):
+                return True
+
+        return False
+
+    def distanceFromLineStartToPoint(self, point) -> int:
+        if (self.isY()):
+            return abs(self.y1 - point[1])
+        if (self.isX()):
+            return abs(self.x1 - point[0])
 
 def getIntersectionPoint(l1, l2): 
     if (l1.isX()):
@@ -29,19 +58,18 @@ def getIntersectionPoint(l1, l2):
     x = l1.x1 if (l1.x1 == l1.x2) else l2.x1
     y = l1.y1 if (l1.y1 == l1.y2) else l2.y1
 
+    intersections.append((x, y))
     return (x, y)
     
 def calculateIntersectionPoints(line1, line2):
     points = []
 
     for i in range(len(line1) - 1):
+        firstSegment = Line(line1[i], line1[i + 1])
         for j in range(len(line2) - 1):
-            p11 = line1[i]
-            p12 = line1[i + 1]
-            p21 = line2[j]
-            p22 = line2[j + 1]
+            secondSegment = Line(line2[j], line2[j + 1])
 
-            intersectionPoint = getIntersectionPoint(Line(p11, p12), Line(p21, p22))
+            intersectionPoint = getIntersectionPoint(firstSegment, secondSegment)
             if intersectionPoint is not None:
                 points.append(intersectionPoint)
     return points
@@ -78,8 +106,23 @@ def Puzzle1(line1, line2):
 
     return str(minDistance)
 
+def calculateDistanceToFirstIntersectionPoint(line) -> int:
+    distance = 0
+    intersectionPoint = intersections[0]
+
+    for i in range(len(line) - 1):
+        lineSegment = Line(line[i], line[i + 1])
+
+        if (lineSegment.containsPoint(intersectionPoint)):
+            return distance + lineSegment.distanceFromLineStartToPoint(intersectionPoint)
+        else:
+            distance += len(lineSegment)
+                
+
 def Puzzle2(line1, line2):
-    return ""
+    shortestDistance = calculateDistanceToFirstIntersectionPoint(line1)
+    shortestDistance += calculateDistanceToFirstIntersectionPoint(line2)
+    return str(shortestDistance)
 
 
 if __name__ == "__main__":
@@ -87,5 +130,4 @@ if __name__ == "__main__":
     line1 = parseLine(inputFile.readline())
     line2 = parseLine(inputFile.readline())
     print("Puzzle 1: " + Puzzle1(line1, line2))
-    print("\n")
     print("Puzzle 2: " + Puzzle2(line1, line2))
