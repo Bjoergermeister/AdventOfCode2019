@@ -38,11 +38,24 @@ def Puzzle1(input):
 
 
 def Puzzle2(input):
-    pass
+    for i in range(layer_size):
+        for j in range(len(layers)):
+            pixel = layers[j][i]
+            if pixel == '1':
+                print('#', end='')
+                break
+            if pixel == '0':
+                print(' ', end='')
+                break
+            if j == len(layers) - 1:
+                print(" ", end="")
+        if i % image_width == image_width - 1 and i > 0:
+            print("")
 
 
 if __name__ == "__main__":
     file = open("input.txt", "r")
     input = file.readlines()[0]
     print("Puzzle 1: " + str(Puzzle1(input)))
-    print("Puzzle 2: " + str(Puzzle2(input)))
+    print("Puzzle 2: \n")
+    Puzzle2(input)
