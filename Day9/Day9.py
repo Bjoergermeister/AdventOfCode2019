@@ -1,8 +1,10 @@
+import copy
+
 relative_base = 0
 
 def get_index(intcode, index, mode):
     if mode == '0':
-        return intcode[index]
+        return intcode[index] if index in intcode else 0
     if mode == '1':
         return index
     if mode == '2':
@@ -37,7 +39,7 @@ def run(intcode, eingabe):
             intcode[index1] = eingabe 
             index += 2
         if (mode == "04"):
-            output = intcode[index1]
+            output = operand1
             index += 2
         if (mode == "05"):
             index = operand2 if operand1 != 0 else index + 3
@@ -50,7 +52,7 @@ def run(intcode, eingabe):
             intcode[index3] = 1 if operand1 == operand2 else 0
             index += 4
         if (mode == "09"):
-            relative_base += intcode[index1]
+            relative_base += operand1
             index += 2
     return output
 
@@ -59,4 +61,10 @@ if __name__ == "__main__":
     intcode = {}
     for index, number in enumerate(input.readline().split(",")):
         intcode[index] = int(number)
-    print("Puzzle 1: " + str(run(intcode, 1)))
+    intcodeCopy = copy.deepcopy(intcode)
+
+    print(f"Puzzle 1: {str(run(intcode, 1))}")
+
+    relative_base = 0
+
+    print(f"Puzzle 2: {str(run(intcodeCopy, 2))}")
