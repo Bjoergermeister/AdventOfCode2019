@@ -1,3 +1,5 @@
+import copy
+
 relative_base = 0
 
 def get_index(intcode, index, mode):
@@ -8,12 +10,18 @@ def get_index(intcode, index, mode):
     if mode == '2':
         return intcode[index] + relative_base
 
-def Puzzle1(intcode):
+def run(intcode):
     global relative_base
 
     # Puzzle vars
     output_counter = 0
     block_tile_count = 0
+    score = 0
+    x = None
+    y = None
+    ball_position = None
+    paddle_position = None
+    joystick = 0
 
     # Intcode vars
     output = 0
@@ -40,16 +48,34 @@ def Puzzle1(intcode):
             intcode[index3] = operand1 * operand2
             index += 4
         if (mode == "03"):
-            intcode[index1] = 0
+            intcode[index1] = joystick
             index += 2
         if (mode == "04"):
             output = operand1
-            if output_counter < 2:
+            if output_counter == 0:
+                x = output
+                output_counter += 1
+            elif output_counter == 1:
+                y = output
                 output_counter += 1
             else:
-                if output == 2:
-                    block_tile_count += 1
                 output_counter = 0
+                if x == -1:
+                    score = output
+                elif output == 2:
+                    block_tile_count += 1
+                elif output == 3:
+                    paddle_position = (x, y)
+                elif output == 4:
+                    ball_position = (x, y)
+                
+                    if paddle_position is not None:
+                        if ball_position[0] == paddle_position[0]:
+                            joystick = 0
+                        elif ball_position[0] < paddle_position[0]:
+                            joystick = -1
+                        else:
+                            joystick = 1
             index += 2
         if (mode == "05"):
             index = operand2 if operand1 != 0 else index + 3
@@ -65,11 +91,22 @@ def Puzzle1(intcode):
             relative_base += operand1
             index += 2
     
+    return block_tile_count, score
+
+def Puzzle1(intcode):
+    block_tile_count, score = run(intcode)
     return block_tile_count
+
+def Puzzle2(intcode):
+    intcode[0] = 2
+    block_tile_count, score = run(intcode)
+    return score
 
 if __name__ == "__main__":
     input = open("input.txt", "r")
     intcode = {}
     for index, number in enumerate(input.readline().split(",")):
         intcode[index] = int(number)
+    intcodeCopy = copy.deepcopy(intcode)
     print("Puzzle 1: " + str(Puzzle1(intcode)))
+    print("Puzzle 2: " + str(Puzzle2(intcodeCopy)))
