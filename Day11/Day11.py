@@ -1,3 +1,5 @@
+import copy
+
 relative_base = 0
 
 def turn_robot(current_position, current_direction, turn_direction):
@@ -31,7 +33,7 @@ def get_index(intcode, index, mode):
     if mode == '2':
         return intcode[index] + relative_base
 
-def Puzzle1(intcode):
+def run(intcode, first_panel_color):
     global relative_base
 
     # Puzzle vars
@@ -39,6 +41,8 @@ def Puzzle1(intcode):
     is_color_output = True
     current_position = (0, 0)
     current_direction = 0 # 0 = Top, 1 = Right, 2 = Bottom, 3 = Left
+
+    panels[current_position] = first_panel_color
 
     # Intcode vars
     output = 0
@@ -90,11 +94,39 @@ def Puzzle1(intcode):
             relative_base += operand1
             index += 2
     
+    return panels
+
+def Puzzle1(intcode):
+    panels = run(intcode, 0)
     return len(panels)
+
+def Puzzle2(intcode):
+    print("Puzzle 2:\n")
+    panels = run(intcode, 1)
+    
+    # Get rectangle coords
+    xmin = 0 
+    xmax = 0 
+    ymin = 0 
+    ymax = 0
+    for panel in panels:
+        x, y = panel
+        xmin = min(xmin, x)
+        xmax = max(xmax, x)
+        ymin = min(ymin, y)
+        ymax = max(ymax, y)
+
+    for y in reversed(range(ymin, ymax + 1)):
+        for x in range(xmin, xmax + 1):
+            character = '#' if (x, y) in panels and panels[(x, y)] == 1 else ' '
+            print(character, end="")
+        print("")
 
 if __name__ == "__main__":
     input = open("input.txt", "r")
     intcode = {}
     for index, number in enumerate(input.readline().split(",")):
         intcode[index] = int(number)
+    intcodeCopy = copy.deepcopy(intcode)
     print("Puzzle 1: " + str(Puzzle1(intcode)))
+    Puzzle2(intcodeCopy)
