@@ -1,8 +1,6 @@
 from math import ceil
 
 reactions = {}
-leftovers = {}
-#ore_reactions = ["NVRVD", "JNWZP", "MNCFX", "VJHF"]
 ore_reactions = []
 
 def parse_element(element):
@@ -28,9 +26,10 @@ def get_item_index(needed_elements):
 
     return None
 
-def puzzle1():
-    needed_elements = [('FUEL', 1)]
+def run(amout):
+    needed_elements = [('FUEL', amout)]
     total_costs = 0
+    leftovers = {}
 
     while True:
         index = get_item_index(needed_elements)
@@ -39,8 +38,12 @@ def puzzle1():
 
         (needed_element, needed_amout) = needed_elements.pop(index)
         if needed_element in leftovers:
-            needed_amout -= leftovers[needed_element]
-            leftovers[needed_element] = 0
+            if leftovers[needed_element] < needed_amout:
+                needed_amout -= leftovers[needed_element]
+                leftovers[needed_element] = 0
+            else:
+                needed_amout = 0
+                leftovers[needed_element] -= needed_amout
 
         (reaction_output, reaction_inputs) = reactions[needed_element]
         reaction_quantity = ceil(needed_amout / reaction_output)
@@ -61,6 +64,33 @@ def puzzle1():
 
     return total_costs
 
+def puzzle1():
+    return run(1)
+
+def puzzle2():
+    ore_for_one_fuel = run(1)
+    low_border = 1e12 // ore_for_one_fuel
+    high_border = low_border * 10
+
+    # Calculate high border
+    while run(high_border) < 1e12:
+        low_border = high_border
+        high_border *= 10
+
+    # Find value with binary search
+    mid = None
+    while low_border < high_border - 1:
+        mid = low_border + round((high_border - low_border) // 2)
+        result = run(mid)
+        if result < 1e12:
+            low_border = mid
+        elif result > 1e12:
+            high_border = mid
+        else:
+            break
+
+    return int(mid)
+    
 if __name__ == "__main__":
     lines = open("input.txt", "r")
     for line in lines:
@@ -73,3 +103,4 @@ if __name__ == "__main__":
 
         reactions[outcome_element] = (int(outcome_amout), elements)
     print(f"Puzzle 1: {puzzle1()}")
+    print(f"Puzzle 2: {puzzle2()}")
