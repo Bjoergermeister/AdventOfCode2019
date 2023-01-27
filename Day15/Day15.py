@@ -2,6 +2,7 @@ import copy
 
 relative_base = 0
 map = {}
+target_position = None
 
 class State:
     def __init__(self, current, direction, distance):
@@ -47,8 +48,10 @@ def move(current, direction):
 def run(intcode):
     global relative_base
     global map
+    global target_position
 
     # Puzzle vars
+    result = 0
     states = {}
     position = (0,0) 
     current_state = State(position, None, 0)
@@ -58,7 +61,7 @@ def run(intcode):
     index = 0
     while(intcode[index] != 99):
         if current_state.current == (0,0) and current_state.direction_index > 3:
-            break
+            return result
 
         instruction = str(intcode[index]).zfill(2)
         
@@ -92,20 +95,21 @@ def run(intcode):
                 current_state.direction_index += 1                    
             else:                
                 symbol = '.' if output == 1 else 'X'
-                set_map(position, symbol)             
                 direction = current_state.direction()
                 position = move(position, direction)
+                set_map(position, symbol)             
                 current_state.direction_index += 1
                 if position in states:
                     current_state = states[position]
                 else:
                     current_state = State(position, direction, current_state.distance + 1)
                     states[position] = current_state
-                
-                # If station is found, return distance from starting position
-                if output == 2:
-                    return current_state.distance
 
+                # If station is found, return distance from starting position
+                if output == 2 and result == 0:
+                    result = current_state.distance
+                    target_position = position
+            
             index += 2
         elif (mode == "05"):
             index = operand2 if operand1 != 0 else index + 3
@@ -124,6 +128,35 @@ def run(intcode):
 def Puzzle1(intcode):
     return run(intcode)
 
+def get_positions(current_position):
+    global map
+
+    tuple_add = lambda i, j: (i[0] + j[0], i[1] + j[1])
+    adjacent_positions = [
+        tuple_add(current_position, (0,1)),
+        tuple_add(current_position, (0,-1)),
+        tuple_add(current_position, (1,0)),
+        tuple_add(current_position, (-1,0))
+    ]
+    return list(filter(lambda x: x in map and map[x] == ".", adjacent_positions))
+
+def Puzzle2():
+    global target_position
+
+    open_positions = [[target_position]]
+    counter = -1
+    while len(open_positions) > 0:
+        positions = open_positions.pop(0)    
+        new_positions = []
+        for position in positions:
+            map[position] = 'O'
+            new_positions.extend(get_positions(position))
+        if len(new_positions) > 0:
+            open_positions.append(new_positions)
+        counter += 1
+        
+    return counter
+
 if __name__ == "__main__":
     file = open("input.txt", "r")
     intcode = {}
@@ -131,3 +164,4 @@ if __name__ == "__main__":
         intcode[index] = int(number)
     intcodeCopy = copy.deepcopy(intcode)
     print("Puzzle 1: " + str(Puzzle1(intcode)))
+    print("Puzzle 2: " + str(Puzzle2()))
