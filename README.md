@@ -36,4 +36,5 @@ Total: 32 out of 50
 # Other years
 
 [2020](https://github.com/Bjoergermeister/AdventOfCode2020) (C#)\
-[2021](https://github.com/Bjoergermeister/AdventOfCode2021) (Rust)
+[2021](https://github.com/Bjoergermeister/AdventOfCode2021) (Rust)\
+[2022](https://github.com/Bjoergermeister/AdventOfCode2022) (Dart)
