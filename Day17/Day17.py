@@ -12,11 +12,13 @@ def get_index(intcode, index, mode):
     if mode == '2':
         return intcode[index] + relative_base
 
-def run(intcode):
+def run(intcode, movement_commands):
     global relative_base
+    relative_base = 0
 
     # Puzzle vars
     field = []
+    movement_command_index = 0
 
     # Intcode vars
     output = 0
@@ -43,13 +45,17 @@ def run(intcode):
             intcode[index3] = operand1 * operand2
             index += 4
         elif (mode == "03"):
-            intcode[index1] = 0
+            intcode[index1] = movement_commands[movement_command_index]
+            movement_command_index += 1
             index += 2
         elif (mode == "04"):
             output = operand1
-            if output != 10:
-                character = '#' if output == 35 else '.'
-                field.append(character)
+
+            if len(movement_commands) > 0: # This is puzzle 2
+                if output > 255:
+                    return output
+            elif output != 10: # This is puzzle 1
+                field.append(chr(output))
             index += 2
         elif (mode == "05"):
             index = operand2 if operand1 != 0 else index + 3
@@ -79,11 +85,11 @@ def is_intersection(field, position):
     right = field[position + 1] == '#'
     return top and bottom and left and right
 
-def Puzzle1(intcode):
+def Puzzle1(intcode):    
     global field_width
     global field_height
 
-    field = run(intcode)    
+    field = run(intcode, [])    
     
     alignment_parameters = 0
     for j in range(0, field_height):
@@ -96,6 +102,27 @@ def Puzzle1(intcode):
                     alignment_parameters += x * y
     return alignment_parameters
 
+def Puzzle2(intcode):
+    intcode[0] = 2
+    '''
+    Main: A,B,A,C,B,A,C,B,A,C
+    A: L6,L4,R12
+    B: L6,R12,R12,L8
+    C: L6,L10,L10,L6
+    
+    ASCII-Codes: 65='A', 66='B', 67='C', 44=',', 10='\n', 76='L', 82='R'
+    '''
+    main = [65,44,66,44,65,44,67,44,66,44,65,44,67,44,66,44,65,44,67,10]
+    a = [76,44,54,44,76,44,52,44,82,44,49,50,10]
+    b = [76,44,54,44,82,44,49,50,44,82,44,49,50,44,76,44,56,10]
+    c = [76,44,54,44,76,44,49,48,44,76,44,49,48,44,76,44,54,10]
+    movement_commands = main
+    movement_commands.extend(a)
+    movement_commands.extend(b)
+    movement_commands.extend(c)   
+    movement_commands.extend([110,10]) # No Video feed 
+    return run(intcode, movement_commands)
+
 if __name__ == "__main__":
     file = open("input.txt", "r")
     intcode = {}
@@ -103,3 +130,4 @@ if __name__ == "__main__":
         intcode[index] = int(number)
     intcodeCopy = copy.deepcopy(intcode)
     print("Puzzle 1: " + str(Puzzle1(intcode)))
+    print("Puzzle 2: " + str(Puzzle2(intcodeCopy)))
