@@ -1,6 +1,10 @@
 import copy
+from math import floor
 
 relative_base = 0
+line_endings = []
+line_beginnings = []
+beam_starting_point = 0
 
 def get_index(intcode, index, mode):
     if mode == '0':
@@ -62,13 +66,72 @@ def run(intcode, x, y):
             index += 2
     
     return output
-
+    
 def Puzzle1(intcode):
-    result = 0
-    for x in range(0, 50):
-        for y in range(0, 50):
-            result += run(copy.deepcopy(intcode), x, y)
-    return result
+    global line_endings, line_beginnings, beam_starting_point
+    previous = None
+    is_first = True
+    sum = 0
+    for y in range(0, 50):   
+        for x in range(0, 50):
+            result = run(copy.deepcopy(intcode), x, y)
+
+            if result == 1 and y > 0 and is_first:
+                beam_starting_point = (x,y)
+                is_first = False
+            if previous == 0 and result == 1:
+                line_beginnings.append(x)
+            elif previous == 1 and result == 0 and y > 0:
+                line_endings.append(x - 1)
+            previous = result
+            sum += result
+    return sum
+
+def calculate_drift(line_edges):
+    sum = 0
+    for i in range(0, len(line_edges) - 1):
+        sum += line_edges[i + 1] - line_edges[i]
+    return round(sum / (len(line_edges) - 1), 1)
+
+def check_corner(intcode, x, y):
+    top_right_corner = 1
+    while top_right_corner == 1:        
+        top_right_corner = run(copy.deepcopy(intcode), x + 99, y)
+        bottom_left_corner = run(copy.deepcopy(intcode), x, y + 99)
+        if top_right_corner == 1 and bottom_left_corner == 1:
+            return x
+        x += 1
+    return -1
+
+def Puzzle2(intcode):
+    global line_beginnings, line_endings, beam_starting_point
+
+    vertical_drift = calculate_drift(line_beginnings)
+    horizontal_drift = calculate_drift(line_endings)
+    
+    average_horizontal_increase = horizontal_drift - vertical_drift
+    vertical_starting_point = beam_starting_point[1] + floor(100 / (average_horizontal_increase))
+    horizontal_starting_point = beam_starting_point[0] + floor((vertical_starting_point - beam_starting_point[1]) * vertical_drift)
+
+    x = horizontal_starting_point
+    y = vertical_starting_point
+    
+    # Go right until the beam is met
+    while True:
+        if run(copy.deepcopy(intcode), x, y) == 1:
+            break
+        x += 1
+
+    # Find square
+    while True:
+        result = check_corner(intcode, x, y)
+        if result != -1:
+            return result * 1000 + y
+        y += 1
+        while True:
+            if run(copy.deepcopy(intcode), x, y) == 1:
+                break
+            x += 1
 
 if __name__ == "__main__":
     input = open("input.txt", "r")
@@ -77,4 +140,4 @@ if __name__ == "__main__":
         intcode[index] = int(number)
     intcodeCopy = copy.deepcopy(intcode)
     print("Puzzle 1: " + str(Puzzle1(intcode)))
-#    print("Puzzle 2: " + str(Puzzle2(intcodeCopy)))
+    print("Puzzle 2: " + str(Puzzle2(intcodeCopy)))
