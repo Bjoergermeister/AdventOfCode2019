@@ -10,32 +10,10 @@ def get_index(intcode, index, mode):
     if mode == '2':
         return intcode[index] + relative_base
 
-def run(intcode):
+def run(intcode, input):
     global relative_base
 
-    # Puzzle vars
-    '''
-    A = 65, B = 66, C = 67, D = 68, J = 74, T = 84, O = 79, R = 82 
-    1. NOT A J
-    2. NOT B T
-    3. OR T J
-    4. NOT C T
-    5. OR T J
-    6. NOT D T
-    7. NOT T T
-    8. AND T J
-    9. WALK
-    '''
-    #input = [78,79,84,32,65,32,74,10,   78,79,84,32,66,32,84,10,  65,78,68,32,84,32,74,10,   87,65,76,75,10]
-    input = [78,79,84,32,65,32,74,10,   
-             78,79,84,32,66,32,84,10,   
-             79,82,32,84,32,74,10,   
-             78,79,84,32,67,32,84,10,
-             79,82,32,84,32,74,10,
-             78,79,84,32,68,32,84,10,
-             78,79,84,32,84,32,84,10,
-             65,78,68,32,84,32,74,10,   
-             87,65,76,75,10]    
+    # Puzzle vars   
     input_index = 0
 
     # Intcode vars
@@ -88,7 +66,64 @@ def run(intcode):
     return output
     
 def Puzzle1(intcode):
-    return run(intcode)
+    '''
+    A = 65, B = 66, C = 67, D = 68, J = 74, T = 84, O = 79, R = 82 
+    1. NOT A J
+    2. NOT B T
+    3. OR T J
+    4. NOT C T
+    5. OR T J
+    6. NOT D T
+    7. NOT T T
+    8. AND T J
+    9. WALK
+    '''
+    input = [78,79,84,32,65,32,74,10,   
+             78,79,84,32,66,32,84,10,   
+             79,82,32,84,32,74,10,   
+             78,79,84,32,67,32,84,10,
+             79,82,32,84,32,74,10,
+             78,79,84,32,68,32,84,10,
+             78,79,84,32,84,32,84,10,
+             65,78,68,32,84,32,74,10,   
+             87,65,76,75,10] 
+    return run(intcode, input)
+
+def Puzzle2(intcode):
+    '''
+    A = 65, B = 66, C = 67, D = 68, J = 74, T = 84, O = 79, R = 82 
+    1. NOT A J
+    2. NOT B T
+    3. OR T J
+    4. NOT C T
+    5. OR T J
+    6. NOT D T
+    7. NOT T T
+    8. AND T J (if one of the next three tiles is a hole and the 4th is solid, jump)
+
+    9. NOT H T
+    10. NOT T T
+    11. OR E T
+    12. AND T J (but only if also either the 5th or the 9th tile are solid)
+
+    11. RUN
+    '''
+    input = [78,79,84,32,65,32,74,10,  #NOT 
+             78,79,84,32,66,32,84,10,  #NOT
+             79,82,32,84,32,74,10,     #OR
+             78,79,84,32,67,32,84,10,  #NOT
+             79,82,32,84,32,74,10,     #OR
+             78,79,84,32,68,32,84,10,  #NOT
+             78,79,84,32,84,32,84,10,  #NOT
+             65,78,68,32,84,32,74,10,  #AND
+
+             78,79,84,32,72,32,84,10,  #NOT
+             78,79,84,32,84,32,84,10,  #NOT
+             79,82,32,69,32,84,10,     #OR
+             65,78,68,32,84,32,74,10,
+
+             82,85,78,10] 
+    return run(intcode, input)
 
 if __name__ == "__main__":
     input = open("input.txt", "r")
@@ -97,3 +132,4 @@ if __name__ == "__main__":
         intcode[index] = int(number)
     intcodeCopy = copy.deepcopy(intcode)
     print("Puzzle 1: " + str(Puzzle1(intcode)))
+    print("Puzzle 2: " + str(Puzzle2(intcodeCopy)))
