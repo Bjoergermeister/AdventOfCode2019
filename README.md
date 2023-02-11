@@ -28,10 +28,10 @@ Day 20: <span style="color:yellow"></span>\
 Day 21: <span style="color:yellow">&#11088;&#11088;</span>\
 Day 22: <span style="color:yellow">&#11088;</span>\
 Day 23: <span style="color:yellow"></span>\
-Day 24: <span style="color:yellow"></span>\
+Day 24: <span style="color:yellow">&#11088;</span>\
 Day 25: <span style="color:yellow"></span>\
 \
-Total: 39 out of 50
+Total: 40 out of 50
 
 # Other years
 
