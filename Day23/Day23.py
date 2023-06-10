@@ -5,7 +5,7 @@ class State:
     def __init__(self, intcode, network_address):
         self.intcode = copy.deepcopy(intcode)
         self.network_address = network_address
-        self.packet_queue = []
+        self.input = []
         self.outputs = []
         self.index = 0
         self.relative_base = 0
@@ -57,12 +57,8 @@ def run(state):
         if state.is_first_input:
             input = state.network_address
             state.is_first_input = False
-        elif len(state.packet_queue) == 0:
-            input = -1
         else:
-            input = state.packet_queue[0].pop(0)
-            if len(state.packet_queue[0]) == 0:
-                del state.packet_queue[0]
+            input = state.input.pop(0) if len(state.input) > 0 else -1
         intcode[index1] = input
         index += 2
     if (mode == "04"):
@@ -87,8 +83,17 @@ def run(state):
     return state.outputs if len(state.outputs) == 3 else None
 
 
+def network_is_idle(states):
+    return all(len(state.input) == 0 for state in states)
+
+
 def Puzzle1(intcode):
     states = [State(intcode, i) for i in range(0, 50)]
+
+    first_answer = 0
+
+    nat_packet = None
+    latest_nat_delivery = None
     while True:
         for state in states:
             packet = run(state)
@@ -96,10 +101,20 @@ def Puzzle1(intcode):
                 continue
 
             destination_index = packet[0]
-            if destination_index == 255:
-                return packet[2]
+            message = packet[1:3]
+            if destination_index != 255:
+                states[destination_index].input.extend(message)
+                state.outputs.clear()
+                continue
 
-            states[destination_index].packet_queue.append(packet[1:3])
+            first_answer = max(first_answer, message[1])
+
+            nat_packet = message.copy()
+            if network_is_idle(states):
+                states[0].input.extend(nat_packet)
+                if nat_packet is not None and latest_nat_delivery is not None and nat_packet[1] == latest_nat_delivery[1]:
+                    return first_answer, nat_packet[1]
+                latest_nat_delivery = list(nat_packet)
             state.outputs.clear()
 
 
@@ -109,4 +124,7 @@ if __name__ == "__main__":
     for index, number in enumerate(input.readline().split(",")):
         intcode[index] = int(number)
     intcodeCopy = copy.deepcopy(intcode)
-    print("Puzzle 1: " + str(Puzzle1(intcode)))
+
+    answer1, answer2 = Puzzle1(intcode)
+    print("Puzzle 1: " + str(answer1))
+    print("Puzzle 2: " + str(answer2))
